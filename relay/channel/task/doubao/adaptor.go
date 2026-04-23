@@ -132,16 +132,17 @@ func (a *TaskAdaptor) BuildRequestHeader(_ *gin.Context, req *http.Request, _ *r
 	return nil
 }
 
-// EstimateBilling 检测请求 metadata 中是否包含视频输入，返回视频折扣 OtherRatio。
+// EstimateBilling 按请求档位（分辨率 × 是否含视频输入）返回价位系数。
+// 基准档位（720p 不含视频）直接按渠道基准价计费，不返回 OtherRatio。
 func (a *TaskAdaptor) EstimateBilling(c *gin.Context, info *relaycommon.RelayInfo) map[string]float64 {
 	req, err := relaycommon.GetTaskRequest(c)
 	if err != nil {
 		return nil
 	}
-	if req.HasVideo() || hasVideoInMetadata(req.Metadata) {
-		if ratio, ok := GetVideoInputRatio(info.OriginModelName); ok {
-			return map[string]float64{"video_input": ratio}
-		}
+	hasVideo := req.HasVideo() || hasVideoInMetadata(req.Metadata)
+	resolution, _ := req.Metadata["resolution"].(string)
+	if ratio, ok := GetPriceRatio(info.OriginModelName, resolution, hasVideo); ok {
+		return map[string]float64{"price_tier": ratio}
 	}
 	return nil
 }
