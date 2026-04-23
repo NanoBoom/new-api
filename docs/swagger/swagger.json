@@ -1,0 +1,1113 @@
+{
+    "schemes": [
+        "https",
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "New API 网关的 OpenAPI 文档（当前仅覆盖 /video 相关路由）。\n完整项目地址：https://github.com/QuantumNous/new-api",
+        "title": "New API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/jimeng/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "即梦官方 API 统一入口，通过 query 参数 `Action` + `Version` 路由到提交或查询动作。\n- `Action=CVSync2AsyncSubmitTask\u0026Version=2022-08-31` 提交任务\n- `Action=CVSync2AsyncGetResult\u0026Version=2022-08-31` 查询结果\n参考：https://www.volcengine.com/docs/85621/1538636",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Video"
+                ],
+                "summary": "即梦视频接口 (官方兼容)",
+                "parameters": [
+                    {
+                        "enum": [
+                            "CVSync2AsyncSubmitTask",
+                            "CVSync2AsyncGetResult"
+                        ],
+                        "type": "string",
+                        "description": "操作类型",
+                        "name": "Action",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "example": "2022-08-31",
+                        "description": "API 版本",
+                        "name": "Version",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "即梦原生请求体（字段视 Action 而定）",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "任务状态和结果",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TaskDto"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/kling/v1/videos/image2video": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "调用可灵 AI 图生视频接口提交异步任务。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Video"
+                ],
+                "summary": "可灵图生视频",
+                "parameters": [
+                    {
+                        "description": "图生视频请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.KlingImage2VideoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "任务状态和结果",
+                        "schema": {
+                            "$ref": "#/definitions/dto.VideoTaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/kling/v1/videos/image2video/{task_id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据 task_id 查询可灵图生视频任务状态。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Video"
+                ],
+                "summary": "可灵任务查询 (图生视频)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "任务状态和结果",
+                        "schema": {
+                            "$ref": "#/definitions/dto.VideoTaskResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "任务不存在",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/kling/v1/videos/text2video": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "调用可灵 AI 文生视频接口提交异步任务。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Video"
+                ],
+                "summary": "可灵文生视频",
+                "parameters": [
+                    {
+                        "description": "文生视频请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.KlingText2VideoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "任务状态和结果",
+                        "schema": {
+                            "$ref": "#/definitions/dto.VideoTaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/kling/v1/videos/text2video/{task_id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据 task_id 查询可灵文生视频任务状态。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Video"
+                ],
+                "summary": "可灵任务查询 (文生视频)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "任务状态和结果",
+                        "schema": {
+                            "$ref": "#/definitions/dto.VideoTaskResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "任务不存在",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/video/generations": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "调用视频生成接口生成视频，支持多种上游：\n- 可灵 AI (Kling): https://app.klingai.com/cn/dev/document-api/apiReference/commonInfo\n- 即梦 (Jimeng): https://www.volcengine.com/docs/85621/1538636\n- 豆包 (Doubao-Seedance): https://www.volcengine.com/docs/82379/1520757\n请求体字段对应 relaycommon.TaskSubmitReq；`metadata` 里的字段会被各渠道 adaptor 按需透传到上游。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Video"
+                ],
+                "summary": "生成视频",
+                "parameters": [
+                    {
+                        "description": "视频生成请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoGenerationsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "任务对象（Doubao/Sora 等渠道统一 OpenAI Video 对象格式；部分渠道可能返回兼容的 task_id 包装）",
+                        "schema": {
+                            "$ref": "#/definitions/dto.OpenAIVideo"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "无权限",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/video/generations/{task_id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据任务 ID 查询视频生成任务的状态与结果。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Video"
+                ],
+                "summary": "查询视频任务",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "任务状态和结果",
+                        "schema": {
+                            "$ref": "#/definitions/dto.VideoTaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "任务不存在",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/videos": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "OpenAI 兼容的视频生成接口，提交一个异步任务。\n参考：https://platform.openai.com/docs/api-reference/videos/create\nSora 渠道同时接受 `multipart/form-data`（支持 `input_reference` 文件上传）与 JSON。",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Video"
+                ],
+                "summary": "创建视频生成任务 (OpenAI 兼容)",
+                "parameters": [
+                    {
+                        "description": "视频生成请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoGenerationsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "任务对象（OpenAI 视频对象格式）",
+                        "schema": {
+                            "$ref": "#/definitions/dto.OpenAIVideo"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "无权限",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/videos/{task_id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据 task_id 查询 OpenAI 兼容视频生成任务的状态与结果。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Video"
+                ],
+                "summary": "查询视频任务状态 (OpenAI 兼容)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "任务对象",
+                        "schema": {
+                            "$ref": "#/definitions/dto.OpenAIVideo"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "任务不存在",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/videos/{task_id}/content": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据 task_id 将上游视频内容透传给客户端。支持用户会话或 API token 鉴权。\n成功时响应体为视频二进制流，`Content-Type` 由上游决定（通常为 `video/mp4`）。",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Video"
+                ],
+                "summary": "拉取视频内容",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "视频二进制流",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "task_id 缺失或任务未完成",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "URL 被 SSRF 策略拦截",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "任务不存在",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "上游获取视频失败",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/videos/{video_id}/remix": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "基于已有 video_id 的视频提交重混任务。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Video"
+                ],
+                "summary": "视频重混 (OpenAI 兼容)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "源视频 ID",
+                        "name": "video_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "重混请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoGenerationsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "任务对象",
+                        "schema": {
+                            "$ref": "#/definitions/dto.OpenAIVideo"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/controller.VideoErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "controller.KlingCameraConfig": {
+            "type": "object",
+            "properties": {
+                "horizontal": {
+                    "type": "number",
+                    "example": 2.5
+                },
+                "pan": {
+                    "type": "number",
+                    "example": 0
+                },
+                "roll": {
+                    "type": "number",
+                    "example": 0
+                },
+                "tilt": {
+                    "type": "number",
+                    "example": 0
+                },
+                "vertical": {
+                    "type": "number",
+                    "example": 0
+                },
+                "zoom": {
+                    "type": "number",
+                    "example": 0
+                }
+            }
+        },
+        "controller.KlingCameraControl": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/controller.KlingCameraConfig"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "simple"
+                }
+            }
+        },
+        "controller.KlingImage2VideoRequest": {
+            "type": "object",
+            "required": [
+                "image"
+            ],
+            "properties": {
+                "aspect_ratio": {
+                    "type": "string",
+                    "example": "16:9"
+                },
+                "callback_url": {
+                    "type": "string",
+                    "example": "https://your.domain/callback"
+                },
+                "camera_control": {
+                    "$ref": "#/definitions/controller.KlingCameraControl"
+                },
+                "cfg_scale": {
+                    "type": "number",
+                    "example": 0.7
+                },
+                "duration": {
+                    "type": "string",
+                    "example": "5"
+                },
+                "external_task_id": {
+                    "type": "string",
+                    "example": "custom-task-002"
+                },
+                "image": {
+                    "type": "string",
+                    "example": "https://h2.inkwai.com/bs2/upload-ylab-stunt/se/ai_portal_queue_mmu_image_upscale_aiweb/3214b798-e1b4-4b00-b7af-72b5b0417420_raw_image_0.jpg"
+                },
+                "mode": {
+                    "type": "string",
+                    "example": "std"
+                },
+                "model_name": {
+                    "type": "string",
+                    "example": "kling-v2-master"
+                },
+                "negative_prompt": {
+                    "type": "string",
+                    "example": "blurry, low quality"
+                },
+                "prompt": {
+                    "type": "string",
+                    "example": "A cat playing piano in the garden"
+                }
+            }
+        },
+        "controller.KlingText2VideoRequest": {
+            "type": "object",
+            "required": [
+                "prompt"
+            ],
+            "properties": {
+                "aspect_ratio": {
+                    "type": "string",
+                    "example": "16:9"
+                },
+                "callback_url": {
+                    "type": "string",
+                    "example": "https://your.domain/callback"
+                },
+                "camera_control": {
+                    "$ref": "#/definitions/controller.KlingCameraControl"
+                },
+                "cfg_scale": {
+                    "type": "number",
+                    "example": 0.7
+                },
+                "duration": {
+                    "type": "string",
+                    "example": "5"
+                },
+                "external_task_id": {
+                    "type": "string",
+                    "example": "custom-task-001"
+                },
+                "mode": {
+                    "type": "string",
+                    "example": "std"
+                },
+                "model_name": {
+                    "type": "string",
+                    "example": "kling-v1"
+                },
+                "negative_prompt": {
+                    "type": "string",
+                    "example": "blurry, low quality"
+                },
+                "prompt": {
+                    "type": "string",
+                    "example": "A cat playing piano in the garden"
+                }
+            }
+        },
+        "controller.VideoErrorPayload": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "task_id is required"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "invalid_request_error"
+                }
+            }
+        },
+        "controller.VideoErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "$ref": "#/definitions/controller.VideoErrorPayload"
+                }
+            }
+        },
+        "controller.VideoGenerationsRequest": {
+            "type": "object",
+            "required": [
+                "prompt"
+            ],
+            "properties": {
+                "audios": {
+                    "description": "参考音频 URL 列表（仅 AudioVideoRef 模型生效）",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "duration": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "image": {
+                    "description": "兼容单图；images 为空时会自动复制到 images[0]",
+                    "type": "string"
+                },
+                "images": {
+                    "description": "参考图 URL 列表",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "metadata": {
+                    "description": "透传给上游渠道的扩展字段",
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "mode": {
+                    "description": "Doubao: first_frame / first_last_frame / multi_reference",
+                    "type": "string",
+                    "example": "multi_reference"
+                },
+                "model": {
+                    "type": "string",
+                    "example": "doubao-seedance-2-0-260128"
+                },
+                "prompt": {
+                    "type": "string",
+                    "example": "宇航员在月面慢跑，背景是地球"
+                },
+                "seconds": {
+                    "description": "字符串秒数；\u003e0 时覆盖 duration",
+                    "type": "string",
+                    "example": "5"
+                },
+                "size": {
+                    "type": "string",
+                    "example": "720x1280"
+                },
+                "videos": {
+                    "description": "参考视频 URL 列表（仅 AudioVideoRef 模型生效）",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "dto.OpenAIVideo": {
+            "type": "object",
+            "properties": {
+                "completed_at": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "error": {
+                    "$ref": "#/definitions/dto.OpenAIVideoError"
+                },
+                "expires_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "model": {
+                    "type": "string"
+                },
+                "object": {
+                    "type": "string"
+                },
+                "progress": {
+                    "type": "integer"
+                },
+                "remixed_from_video_id": {
+                    "type": "string"
+                },
+                "seconds": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "Should use VideoStatus constants: VideoStatusQueued, VideoStatusInProgress, VideoStatusCompleted, VideoStatusFailed",
+                    "type": "string"
+                },
+                "task_id": {
+                    "description": "兼容旧接口 待废弃",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.OpenAIVideoError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.TaskDto": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "channel_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "fail_reason": {
+                    "type": "string"
+                },
+                "finish_time": {
+                    "type": "integer"
+                },
+                "group": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "platform": {
+                    "type": "string"
+                },
+                "progress": {
+                    "type": "string"
+                },
+                "properties": {},
+                "quota": {
+                    "type": "integer"
+                },
+                "result_url": {
+                    "description": "任务结果 URL（视频地址等）",
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "submit_time": {
+                    "type": "integer"
+                },
+                "task_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VideoTaskError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VideoTaskMetadata": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "description": "实际生成的视频时长",
+                    "type": "number",
+                    "example": 5
+                },
+                "fps": {
+                    "description": "实际帧率",
+                    "type": "integer",
+                    "example": 30
+                },
+                "height": {
+                    "description": "实际高度",
+                    "type": "integer",
+                    "example": 512
+                },
+                "seed": {
+                    "description": "使用的随机种子",
+                    "type": "integer",
+                    "example": 20231234
+                },
+                "width": {
+                    "description": "实际宽度",
+                    "type": "integer",
+                    "example": 512
+                }
+            }
+        },
+        "dto.VideoTaskResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "description": "错误信息（失败时）",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.VideoTaskError"
+                        }
+                    ]
+                },
+                "format": {
+                    "description": "视频格式",
+                    "type": "string",
+                    "example": "mp4"
+                },
+                "metadata": {
+                    "description": "结果元数据",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.VideoTaskMetadata"
+                        }
+                    ]
+                },
+                "status": {
+                    "description": "任务状态",
+                    "type": "string",
+                    "example": "succeeded"
+                },
+                "task_id": {
+                    "description": "任务ID",
+                    "type": "string",
+                    "example": "abcd1234efgh"
+                },
+                "url": {
+                    "description": "视频资源URL（成功时）",
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "使用 `Bearer sk-xxxxxxx` 的形式在 Header 中传递用户 Token。",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
