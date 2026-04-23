@@ -138,7 +138,7 @@ func (a *TaskAdaptor) EstimateBilling(c *gin.Context, info *relaycommon.RelayInf
 	if err != nil {
 		return nil
 	}
-	if hasVideoInMetadata(req.Metadata) {
+	if req.HasVideo() || hasVideoInMetadata(req.Metadata) {
 		if ratio, ok := GetVideoInputRatio(info.OriginModelName); ok {
 			return map[string]float64{"video_input": ratio}
 		}
@@ -280,6 +280,30 @@ func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*
 				Type: "image_url",
 				ImageURL: &MediaURL{
 					URL: imgURL,
+				},
+			})
+		}
+	}
+
+	// Add audios if present
+	if req.HasAudio() {
+		for _, audioURL := range req.Audios {
+			r.Content = append(r.Content, ContentItem{
+				Type: "audio_url",
+				AudioURL: &MediaURL{
+					URL: audioURL,
+				},
+			})
+		}
+	}
+
+	// Add videos if present
+	if req.HasVideo() {
+		for _, videoURL := range req.Videos {
+			r.Content = append(r.Content, ContentItem{
+				Type: "video_url",
+				VideoURL: &MediaURL{
+					URL: videoURL,
 				},
 			})
 		}
