@@ -40,6 +40,19 @@ var buildFS embed.FS
 //go:embed web/dist/index.html
 var indexPage []byte
 
+// 生成 Swagger 文档（需先安装 CLI：go install github.com/swaggo/swag/cmd/swag@v1.16.6）。
+//go:generate swag init -g main.go -o docs/swagger --parseDependency --parseInternal
+
+// @title						New API
+// @version					1.0
+// @description				New API 网关的 OpenAPI 文档（当前仅覆盖 /video 相关路由）。
+// @description				完整项目地址：https://github.com/QuantumNous/new-api
+// @BasePath					/
+// @schemes					https http
+// @securityDefinitions.apikey	ApiKeyAuth
+// @in							header
+// @name						Authorization
+// @description				使用 `Bearer sk-xxxxxxx` 的形式在 Header 中传递用户 Token。
 func main() {
 	startTime := time.Now()
 

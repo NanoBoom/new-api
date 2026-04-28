@@ -104,6 +104,14 @@ func validateMultipartTaskRequest(c *gin.Context, info *RelayInfo, action string
 		req.Images = images
 	}
 
+	if audios := formData["audios"]; len(audios) > 0 {
+		req.Audios = audios
+	}
+
+	if videos := formData["videos"]; len(videos) > 0 {
+		req.Videos = videos
+	}
+
 	for key, values := range formData {
 		if len(values) > 0 && !isKnownTaskField(key) {
 			if intVal, err := strconv.Atoi(values[0]); err == nil {
@@ -188,6 +196,8 @@ func isKnownTaskField(field string) bool {
 		"mode":            true,
 		"image":           true,
 		"images":          true,
+		"audios":          true,
+		"videos":          true,
 		"size":            true,
 		"duration":        true,
 		"input_reference": true, // Sora 特有字段
