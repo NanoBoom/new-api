@@ -4,6 +4,9 @@ BACKEND_DIR = .
 
 .PHONY: all build-frontend build-frontend-classic build-all-frontends start-backend dev dev-api dev-web dev-web-classic
 
+help: ## Prints help for targets with comments
+	@cat $(MAKEFILE_LIST) | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
 all: build-all-frontends start-backend
 
 build-frontend:
@@ -16,7 +19,7 @@ build-frontend-classic:
 
 build-all-frontends: build-frontend build-frontend-classic
 
-start-backend:
+start-backend: ## start server
 	@echo "Starting backend dev server..."
 	@cd $(BACKEND_DIR) && go run main.go &
 

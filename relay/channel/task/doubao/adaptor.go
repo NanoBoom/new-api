@@ -132,16 +132,17 @@ func (a *TaskAdaptor) BuildRequestHeader(_ *gin.Context, req *http.Request, _ *r
 	return nil
 }
 
-// EstimateBilling 检测请求 metadata 中是否包含视频输入，返回视频折扣 OtherRatio。
+// EstimateBilling 按请求档位（分辨率 × 是否含视频输入）返回价位系数。
+// 基准档位（720p 不含视频）直接按渠道基准价计费，不返回 OtherRatio。
 func (a *TaskAdaptor) EstimateBilling(c *gin.Context, info *relaycommon.RelayInfo) map[string]float64 {
 	req, err := relaycommon.GetTaskRequest(c)
 	if err != nil {
 		return nil
 	}
-	if hasVideoInMetadata(req.Metadata) {
-		if ratio, ok := GetVideoInputRatio(info.OriginModelName); ok {
-			return map[string]float64{"video_input": ratio}
-		}
+	hasVideo := req.HasVideo() || hasVideoInMetadata(req.Metadata)
+	resolution, _ := req.Metadata["resolution"].(string)
+	if ratio, ok := GetPriceRatio(info.OriginModelName, resolution, hasVideo); ok {
+		return map[string]float64{"price_tier": ratio}
 	}
 	return nil
 }
@@ -267,23 +268,106 @@ func (a *TaskAdaptor) GetChannelName() string {
 	return ChannelName
 }
 
+// resolveMode 根据模型能力档案推断最终使用的模式。显式 mode 信任调用方，原样返回。
+// 自动推断优先级：reference_image > 音视频参考 > 首尾帧 > 首帧。
+func resolveMode(explicit string, req *relaycommon.TaskSubmitReq, p ModelProfile) string {
+	switch explicit {
+	case ModeFirstFrame, ModeFirstLastFrame, ModeMultiReference:
+		return explicit
+	}
+
+	if p.ReferenceImage && req.HasImage() {
+		return ModeMultiReference
+	}
+	if p.AudioVideoRef && (req.HasAudio() || req.HasVideo()) {
+		return ModeMultiReference
+	}
+	if p.ImageFrames && req.HasImage() {
+		if len(req.Images) >= 2 {
+			return ModeFirstLastFrame
+		}
+		return ModeFirstFrame
+	}
+	return ""
+}
+
+// fillMediaContent 按模式将 images/audios/videos 填入 r.Content 并写入对应 role。
+// 所有能力判断都委托给 ModelProfile，本函数只负责按模式放置媒体。
+func fillMediaContent(r *requestPayload, req *relaycommon.TaskSubmitReq, mode string, p ModelProfile) {
+	appendImg := func(url, role string) {
+		r.Content = append(r.Content, ContentItem{
+			Type:     "image_url",
+			ImageURL: &MediaURL{URL: url},
+			Role:     role,
+		})
+	}
+	appendAudio := func(url, role string) {
+		r.Content = append(r.Content, ContentItem{
+			Type:     "audio_url",
+			AudioURL: &MediaURL{URL: url},
+			Role:     role,
+		})
+	}
+	appendVideo := func(url, role string) {
+		r.Content = append(r.Content, ContentItem{
+			Type:     "video_url",
+			VideoURL: &MediaURL{URL: url},
+			Role:     role,
+		})
+	}
+
+	switch mode {
+	case ModeFirstFrame:
+		if len(req.Images) > 0 {
+			appendImg(req.Images[0], RoleFirstFrame)
+		}
+	case ModeFirstLastFrame:
+		for i, url := range req.Images {
+			if i >= 2 {
+				break
+			}
+			role := RoleFirstFrame
+			if i == 1 {
+				role = RoleLastFrame
+			}
+			appendImg(url, role)
+		}
+	case ModeMultiReference:
+		if p.ReferenceImage {
+			for _, url := range req.Images {
+				appendImg(url, RoleReferenceImage)
+			}
+		}
+		if p.AudioVideoRef {
+			for _, url := range req.Audios {
+				appendAudio(url, RoleReferenceAudio)
+			}
+			for _, url := range req.Videos {
+				appendVideo(url, RoleReferenceVideo)
+			}
+		}
+	default:
+		// 模型未声明任何能力：原样透传所有媒体但不写 role。
+		for _, url := range req.Images {
+			appendImg(url, "")
+		}
+		for _, url := range req.Audios {
+			appendAudio(url, "")
+		}
+		for _, url := range req.Videos {
+			appendVideo(url, "")
+		}
+	}
+}
+
 func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*requestPayload, error) {
 	r := requestPayload{
 		Model:   req.Model,
 		Content: []ContentItem{},
 	}
 
-	// Add images if present
-	if req.HasImage() {
-		for _, imgURL := range req.Images {
-			r.Content = append(r.Content, ContentItem{
-				Type: "image_url",
-				ImageURL: &MediaURL{
-					URL: imgURL,
-				},
-			})
-		}
-	}
+	profile := ProfileOf(req.Model)
+	fillMediaContent(&r, req, resolveMode(req.Mode, req, profile), profile)
 
 	metadata := req.Metadata
 	if err := taskcommon.UnmarshalMetadata(metadata, &r); err != nil {

@@ -46,6 +46,19 @@ var classicBuildFS embed.FS
 //go:embed web/classic/dist/index.html
 var classicIndexPage []byte
 
+// 生成 Swagger 文档（需先安装 CLI：go install github.com/swaggo/swag/cmd/swag@v1.16.6）。
+//go:generate swag init -g main.go -o docs/swagger --parseDependency --parseInternal
+
+// @title						New API
+// @version					1.0
+// @description				New API 网关的 OpenAPI 文档（当前仅覆盖 /video 相关路由）。
+// @description				完整项目地址：https://github.com/QuantumNous/new-api
+// @BasePath					/
+// @schemes					https http
+// @securityDefinitions.apikey	ApiKeyAuth
+// @in							header
+// @name						Authorization
+// @description				使用 `Bearer sk-xxxxxxx` 的形式在 Header 中传递用户 Token。
 func main() {
 	startTime := time.Now()
 
@@ -169,7 +182,7 @@ func main() {
 		})
 	}))
 	// This will cause SSE not to work!!!
-	//server.Use(gzip.Gzip(gzip.DefaultCompression))
+	// server.Use(gzip.Gzip(gzip.DefaultCompression))
 	server.Use(middleware.RequestId())
 	server.Use(middleware.PoweredBy())
 	server.Use(middleware.I18n())
@@ -195,7 +208,7 @@ func main() {
 		ClassicBuildFS:   classicBuildFS,
 		ClassicIndexPage: classicIndexPage,
 	})
-	var port = os.Getenv("PORT")
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = strconv.Itoa(*common.Port)
 	}
