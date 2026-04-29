@@ -5,6 +5,7 @@
 .gitignore
 Makefile
 docs
+!docs/swagger
 .eslintcache
 .gocache
 /web/node_modules
